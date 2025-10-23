@@ -1,5 +1,4 @@
 from django.db import migrations
-from django.utils.text import slugify
 
 
 def create_seed_data(apps, schema_editor):
@@ -9,35 +8,24 @@ def create_seed_data(apps, schema_editor):
     VenueImage = apps.get_model('main', 'VenueImage')
     AddOn = apps.get_model('main', 'AddOn')
 
-    category_specs = [
-        ('futsal', 'Futsal Arena'),
-        ('basketball', 'Basketball Court'),
-        ('badminton', 'Badminton Hall'),
-    ]
+    categories = {
+        'futsal': VenueCategory.objects.create(name='Futsal Arena'),
+        'basketball': VenueCategory.objects.create(name='Basketball Court'),
+        'badminton': VenueCategory.objects.create(name='Badminton Hall'),
+    }
 
-    categories = {}
-    for key, name in category_specs:
-        slug = slugify(name)
-        category, _ = VenueCategory.objects.get_or_create(
-            slug=slug,
-            defaults={
-                'name': name,
-            },
-        )
-        categories[key] = category
-
-    amenities = {}
-    for name in [
-        'Locker Room',
-        'Shower Facility',
-        'Scoreboard',
-        'Premium Lighting',
-        'Hydration Station',
-        'Coaching Bench',
-        'Medical Kit',
-    ]:
-        amenity, _ = Amenity.objects.get_or_create(name=name)
-        amenities[name] = amenity
+    amenities = {
+        name: Amenity.objects.create(name=name)
+        for name in [
+            'Locker Room',
+            'Shower Facility',
+            'Scoreboard',
+            'Premium Lighting',
+            'Hydration Station',
+            'Coaching Bench',
+            'Medical Kit',
+        ]
+    }
 
     venues_data = [
         {
@@ -103,43 +91,22 @@ def create_seed_data(apps, schema_editor):
     ]
 
     for data in venues_data:
-        slug = slugify(data['name'])
-        venue, created = Venue.objects.get_or_create(
-            slug=slug,
-            defaults={
-                'name': data['name'],
-                'city': data['city'],
-                'address': data['address'],
-                'category': data['category'],
-                'price_per_hour': data['price_per_hour'],
-                'capacity': data['capacity'],
-                'hero_image': data['hero_image'],
-                'description': data['description'],
-                'highlights': data['highlights'],
-            },
+        venue = Venue.objects.create(
+            name=data['name'],
+            city=data['city'],
+            address=data['address'],
+            category=data['category'],
+            price_per_hour=data['price_per_hour'],
+            capacity=data['capacity'],
+            hero_image=data['hero_image'],
+            description=data['description'],
+            highlights=data['highlights'],
         )
-        if not created:
-            Venue.objects.filter(pk=venue.pk).update(
-                name=data['name'],
-                city=data['city'],
-                address=data['address'],
-                category=data['category'],
-                price_per_hour=data['price_per_hour'],
-                capacity=data['capacity'],
-                hero_image=data['hero_image'],
-                description=data['description'],
-                highlights=data['highlights'],
-            )
-            venue.refresh_from_db()
         venue.amenities.set([amenities[name] for name in data['amenities']])
         for image in data['images']:
-            VenueImage.objects.get_or_create(venue=venue, image_url=image)
+            VenueImage.objects.create(venue=venue, image_url=image)
         for name, price, description in data['add_ons']:
-            AddOn.objects.get_or_create(
-                venue=venue,
-                name=name,
-                defaults={'price': price, 'description': description},
-            )
+            AddOn.objects.create(venue=venue, name=name, price=price, description=description)
 
 
 def delete_seed_data(apps, schema_editor):
