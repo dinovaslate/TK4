@@ -1,0 +1,283 @@
+{% extends "main/base.html" %}
+{% block title %}{{ object.name }} — RagaSpace{% endblock %}
+{% block content %}
+<section class="container" style="padding:48px 0 32px; display:grid; gap:32px;">
+  <div style="display:grid; gap:24px; grid-template-columns:1.2fr 1fr; align-items:start;">
+    <div style="display:grid; gap:18px;">
+      <div style="border-radius:24px; overflow:hidden; border:1px solid var(--stroke); position:relative;">
+        <img src="{{ object.hero_image }}" alt="{{ object.name }} hero" style="width:100%; max-height:460px; object-fit:cover;" />
+        <form method="post" action="{% url 'toggle_wishlist' object.slug %}" class="heart" style="top:18px; right:18px;">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+          <button type="submit" aria-label="Toggle wishlist" style="all:unset; display:grid; place-items:center;">
+            <svg width="22" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 21s-6.5-4.35-9-8.88C1.5 6.6 4.74 3 8.4 3c2.16 0 3.6 1.34 3.6 1.34S13.44 3 15.6 3C19.26 3 22.5 6.6 21 12.12 18.5 16.65 12 21 12 21Z" fill="{% if object.id in wishlist_ids %}#ff5d6c{% else %}none{% endif %}" stroke="#ff5d6c" stroke-width="1.4" />
+            </svg>
+          </button>
+        </form>
+        <span class="cat" style="left:18px; top:18px;">{{ object.category.name }}</span>
+      </div>
+      <div style="display:grid; gap:16px; background:var(--card); border:1px solid var(--stroke); border-radius:18px; padding:22px;">
+        <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between;">
+          <div>
+            <h1 style="margin:0;">{{ object.name }}</h1>
+            <div class="meta" style="margin-top:6px;">
+              <span>{{ object.city }}</span>
+              <span>•</span>
+              <span>{{ object.capacity }} people</span>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:800; font-size:24px;">IDR {{ object.price_per_hour|floatformat:0 }}/hour</div>
+            {% with avg=object.average_rating %}
+              {% if avg %}
+                <div style="color:var(--accent); font-weight:600;">⭐ {{ avg|floatformat:1 }} / 5</div>
+              {% else %}
+                <div style="color:var(--muted);">No reviews yet</div>
+              {% endif %}
+            {% endwith %}
+          </div>
+        </div>
+        <p style="color:var(--muted); line-height:1.7;">{{ object.description }}</p>
+        {% if object.highlight_items %}
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            {% for highlight in object.highlight_items %}
+              <span style="border:1px solid var(--stroke); padding:8px 12px; border-radius:999px; background:rgba(15,135,147,.18); color:var(--text); font-size:13px;">{{ highlight }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% if object.amenities.all %}
+          <div>
+            <h3 style="margin:0 0 10px;">Amenities</h3>
+            <ul style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px; padding:0; margin:0; list-style:none;">
+              {% for amenity in object.amenities.all %}
+                <li style="background:rgba(7,27,32,.65); border:1px solid var(--stroke); padding:10px 12px; border-radius:14px;">{{ amenity.name }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+      </div>
+      {% if object.gallery.all %}
+        <div style="display:grid; gap:14px; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));">
+          {% for image in object.gallery.all %}
+            <img src="{{ image.image_url }}" alt="{{ image.alt_text|default:object.name }} image" style="border-radius:16px; border:1px solid var(--stroke); height:180px; object-fit:cover;" />
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% if upcoming_bookings %}
+        <div style="background:rgba(8,27,32,.6); border:1px solid var(--stroke); border-radius:16px; padding:18px;">
+          <h3 style="margin-top:0;">Upcoming slots</h3>
+          <ul style="margin:0; padding-left:18px; color:var(--muted);">
+            {% for booking in upcoming_bookings %}
+              <li>{{ booking.date }} • {{ booking.start_time }} - {{ booking.end_time }} ({{ booking.get_status_display }})</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+    <div style="display:grid; gap:20px;">
+      <div style="background:linear-gradient(180deg, #0f3941cc, #0a242c); border:1px solid var(--stroke); border-radius:20px; padding:22px;">
+        <h2 style="margin-top:0;">Book this venue</h2>
+        <form method="post" action="{% url 'book_venue' object.slug %}" id="bookingForm" data-price="{{ object.price_per_hour }}">
+          {% csrf_token %}
+          <div style="display:grid; gap:14px;">
+            {% if booking_form.non_field_errors %}
+              <div style="background:#2d0f14b5; border:1px solid #ff5d6c55; color:#ffd1d1; padding:12px 14px; border-radius:14px;">
+                {% for error in booking_form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+              </div>
+            {% endif %}
+            <label style="display:grid; gap:6px;">
+              <span style="font-size:13px; color:var(--muted);">Date</span>
+              {{ booking_form.date }}
+              {% if booking_form.date.errors %}<span style="color:#ffb3b3; font-size:12px;">{{ booking_form.date.errors.0 }}</span>{% endif %}
+            </label>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+              <label style="display:grid; gap:6px;">
+                <span style="font-size:13px; color:var(--muted);">Start Time</span>
+                {{ booking_form.start_time }}
+                {% if booking_form.start_time.errors %}<span style="color:#ffb3b3; font-size:12px;">{{ booking_form.start_time.errors.0 }}</span>{% endif %}
+              </label>
+              <label style="display:grid; gap:6px;">
+                <span style="font-size:13px; color:var(--muted);">End Time</span>
+                {{ booking_form.end_time }}
+                {% if booking_form.end_time.errors %}<span style="color:#ffb3b3; font-size:12px;">{{ booking_form.end_time.errors.0 }}</span>{% endif %}
+              </label>
+            </div>
+            {% with add_on_list=object.add_ons.all selected_addons=booking_form.fields.add_ons and booking_form['add_ons'].value %}
+            {% if add_on_list %}
+              <fieldset style="border:1px solid var(--stroke); border-radius:14px; padding:12px 14px;">
+                <legend style="font-weight:600;">Add-ons</legend>
+                <div style="display:grid; gap:10px;">
+                  {% for add_on in add_on_list %}
+                    <label style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                      <span>
+                        <input type="checkbox" name="add_ons" value="{{ add_on.id }}" data-price="{{ add_on.price }}" {% if selected_addons and add_on.id|stringformat:'s' in selected_addons %}checked{% endif %} />
+                        {{ add_on.name }}
+                      </span>
+                      <span style="color:var(--accent); font-weight:600;">+ IDR {{ add_on.price|floatformat:0 }}</span>
+                    </label>
+                  {% endfor %}
+                </div>
+              </fieldset>
+            {% endif %}
+            {% endwith %}
+            <label style="display:grid; gap:6px;">
+              <span style="font-size:13px; color:var(--muted);">Match notes</span>
+              {{ booking_form.notes }}
+            </label>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(15,135,147,.16); border:1px solid var(--stroke); border-radius:16px; padding:12px 16px;">
+              <div>
+                <div style="font-size:13px; color:var(--muted);">Estimated total</div>
+                <div style="font-weight:700; font-size:18px;" data-total>—</div>
+              </div>
+              <button type="button" class="btn" id="previewPayment">Preview Payment</button>
+            </div>
+            <button type="submit" class="btn" style="width:100%; justify-content:center;">Book Now</button>
+          </div>
+        </form>
+      </div>
+      <div style="background:rgba(7,27,32,.65); border:1px solid var(--stroke); border-radius:18px; padding:20px;">
+        <h2 style="margin-top:0;">Write a review</h2>
+        <form method="post" action="{% url 'add_review' object.slug %}" style="display:grid; gap:14px;">
+          {% csrf_token %}
+          {% with current_rating=review_form['rating'].value %}
+            <div>
+              <span style="font-size:13px; color:var(--muted);">Rating</span>
+              <div style="display:flex; gap:10px; margin-top:8px;">
+                {% for choice in review_form.fields.rating.choices %}
+                  <label style="display:flex; align-items:center; gap:4px;">
+                    <input type="radio" name="rating" value="{{ choice.0 }}" {% if current_rating %}{% if current_rating|stringformat:'s' == choice.0|stringformat:'s' %}checked{% endif %}{% elif choice.0 == 5 %}checked{% endif %} />
+                    {{ choice.0 }}
+                  </label>
+                {% endfor %}
+              </div>
+            </div>
+          {% endwith %}
+          <label style="display:grid; gap:6px;">
+            <span style="font-size:13px; color:var(--muted);">Comment</span>
+            {{ review_form.comment }}
+          </label>
+          <button type="submit" class="btn" style="justify-content:center;">Submit Review</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div style="background:rgba(6,23,28,.6); border:1px solid var(--stroke); border-radius:20px; padding:24px;">
+    <h2 style="margin-top:0;">Community reviews</h2>
+    {% if object.reviews.all %}
+      <div style="display:grid; gap:18px;">
+        {% for review in object.reviews.all %}
+          <article style="border:1px solid var(--stroke); border-radius:16px; padding:16px; background:rgba(9,33,38,.65);">
+            <header style="display:flex; justify-content:space-between; align-items:center;">
+              <strong>{{ review.user.first_name|default:review.user.username }}</strong>
+              <span style="color:var(--accent);">{% for _ in review.rating_stars %}⭐{% endfor %}</span>
+            </header>
+            <p style="margin:12px 0 0; color:var(--muted);">{{ review.comment }}</p>
+            <div style="font-size:12px; color:var(--muted); margin-top:10px;">{{ review.created_at|date:"M d, Y" }}</div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p style="color:var(--muted);">No reviews yet. Be the first to share your play experience.</p>
+    {% endif %}
+  </div>
+</section>
+
+<div id="paymentModal" style="position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:#000000a6; backdrop-filter:blur(4px); z-index:120;">
+  <div style="width:min(480px, 94vw); background:#041d23; border:1px solid var(--stroke); border-radius:18px; padding:24px; color:var(--text); box-shadow:0 20px 60px rgba(0,0,0,.45);">
+    <h3 style="margin-top:0;">Booking Summary</h3>
+    <div style="display:grid; gap:12px; margin:18px 0;">
+      <div style="display:flex; justify-content:space-between;">
+        <span>Date</span>
+        <span data-summary-date>—</span>
+      </div>
+      <div style="display:flex; justify-content:space-between;">
+        <span>Time</span>
+        <span data-summary-time>—</span>
+      </div>
+      <div style="display:flex; justify-content:space-between;">
+        <span>Venue</span>
+        <span>{{ object.name }}</span>
+      </div>
+      <div style="display:flex; justify-content:space-between;">
+        <span>Add-ons</span>
+        <span data-summary-addons>—</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-weight:700;">
+        <span>Total</span>
+        <span data-summary-total>—</span>
+      </div>
+    </div>
+    <p style="color:var(--muted); font-size:13px;">Confirm to continue and secure your slot. Payment instructions will be shared after submission.</p>
+    <div style="display:flex; gap:12px; justify-content:flex-end;">
+      <button type="button" class="btn" style="background:rgba(9,33,38,.8); color:var(--text);" data-close>Close</button>
+      <button type="button" class="btn" style="justify-content:center;" data-submit>Confirm Booking</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+  {{ block.super }}
+  <script>
+    (function(){
+      const form = document.getElementById('bookingForm');
+      if (!form) return;
+      const pricePerHour = parseFloat(form.dataset.price || '0');
+      const modal = document.getElementById('paymentModal');
+      const totalNode = form.querySelector('[data-total]');
+      const summary = {
+        date: modal.querySelector('[data-summary-date]'),
+        time: modal.querySelector('[data-summary-time]'),
+        addons: modal.querySelector('[data-summary-addons]'),
+        total: modal.querySelector('[data-summary-total]'),
+      };
+      const updateTotal = () => {
+        const start = form.querySelector('input[name="start_time"]').value;
+        const end = form.querySelector('input[name="end_time"]').value;
+        const date = form.querySelector('input[name="date"]').value;
+        if (!start || !end || !date) {
+          totalNode.textContent = '—';
+          return { total: 0, date, start, end };
+        }
+        const startDate = new Date(`${date}T${start}`);
+        const endDate = new Date(`${date}T${end}`);
+        const diffHours = Math.max((endDate - startDate) / 36e5, 0);
+        let addOnTotal = 0;
+        const selectedAddOns = [];
+        form.querySelectorAll('input[name="add_ons"]:checked').forEach((box) => {
+          addOnTotal += parseFloat(box.dataset.price || '0');
+          const label = box.closest('label');
+          if (label) selectedAddOns.push(label.innerText.trim());
+        });
+        const total = (diffHours * pricePerHour) + addOnTotal;
+        const formatted = new Intl.NumberFormat('id-ID').format(Math.round(total));
+        totalNode.textContent = `IDR ${formatted}`;
+        return { total, date, start, end, addOns: selectedAddOns, formatted };
+      };
+      form.addEventListener('change', updateTotal);
+      form.addEventListener('input', updateTotal);
+      updateTotal();
+      const previewBtn = document.getElementById('previewPayment');
+      if (previewBtn) {
+        previewBtn.addEventListener('click', () => {
+          const details = updateTotal();
+          summary.date.textContent = details.date || '—';
+          summary.time.textContent = details.start && details.end ? `${details.start} - ${details.end}` : '—';
+          summary.addons.textContent = details.addOns && details.addOns.length ? details.addOns.join(', ') : 'None';
+          summary.total.textContent = details.formatted ? `IDR ${details.formatted}` : '—';
+          modal.style.display = 'flex';
+        });
+      }
+      modal?.querySelector('[data-close]')?.addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+      modal?.addEventListener('click', (event) => {
+        if (event.target === modal) modal.style.display = 'none';
+      });
+      modal?.querySelector('[data-submit]')?.addEventListener('click', () => {
+        modal.style.display = 'none';
+        form.submit();
+      });
+    })();
+  </script>
+{% endblock %}
