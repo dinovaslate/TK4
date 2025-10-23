@@ -1,5 +1,4 @@
 from django.db import migrations
-from django.utils.text import slugify
 
 
 def create_seed_data(apps, schema_editor):
@@ -9,18 +8,11 @@ def create_seed_data(apps, schema_editor):
     VenueImage = apps.get_model('main', 'VenueImage')
     AddOn = apps.get_model('main', 'AddOn')
 
-    category_specs = [
-        ('futsal', 'Futsal Arena'),
-        ('basketball', 'Basketball Court'),
-        ('badminton', 'Badminton Hall'),
-    ]
-
-    categories = {}
-    for key, name in category_specs:
-        categories[key] = VenueCategory.objects.create(
-            name=name,
-            slug=slugify(name),
-        )
+    categories = {
+        'futsal': VenueCategory.objects.create(name='Futsal Arena'),
+        'basketball': VenueCategory.objects.create(name='Basketball Court'),
+        'badminton': VenueCategory.objects.create(name='Badminton Hall'),
+    }
 
     amenities = {
         name: Amenity.objects.create(name=name)
@@ -101,7 +93,6 @@ def create_seed_data(apps, schema_editor):
     for data in venues_data:
         venue = Venue.objects.create(
             name=data['name'],
-            slug=slugify(data['name']),
             city=data['city'],
             address=data['address'],
             category=data['category'],
