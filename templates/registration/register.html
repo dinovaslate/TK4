@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RagaSpace — Register</title>
+  <style>
+    :root{
+      --bg-1:#0a1d2a; --bg-2:#031522; --aurora-1:#1fb36b; --aurora-2:#1c9a7e; --aurora-3:#0b6fa6;
+      --glass:#ffffff10; --glass-2:#ffffff0d; --stroke:#ffffff2a; --stroke-2:#ffffff1a; --text:#eaf5ff; --muted:#c3d7e6;
+      --cta-1:#2ecc71; --cta-2:#2aa36b; --cta-3:#7ad6a6; --cta-4:#256149; --danger:#ff5c5c;
+      --radius-xl:26px; --radius-lg:18px; --radius-md:14px; --shadow:0 20px 60px rgba(0,0,0,.45);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--text); font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      background:
+        radial-gradient(1200px 700px at 15% -10%, color-mix(in hsl, var(--aurora-1) 28%, transparent) 0%, transparent 70%),
+        radial-gradient(900px 580px at 85% 0%, color-mix(in hsl, var(--aurora-3) 30%, transparent) 0%, transparent 72%),
+        radial-gradient(1100px 700px at 50% 90%, color-mix(in hsl, var(--aurora-2) 25%, transparent) 0%, transparent 70%),
+        linear-gradient(180deg, #0b2c34 0%, #072131 35%, #041725 100%);
+      overflow-y:auto;
+      -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    }
+    body::before{
+      content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+      background:
+        radial-gradient(2px 2px at 10% 20%, #ffffff40 20%, transparent 21%),
+        radial-gradient(2px 2px at 30% 10%, #ffffff36 20%, transparent 21%),
+        radial-gradient(2px 2px at 60% 25%, #ffffff30 20%, transparent 21%),
+        radial-gradient(2px 2px at 80% 35%, #ffffff28 20%, transparent 21%),
+        radial-gradient(2px 2px at 20% 70%, #ffffff22 20%, transparent 21%),
+        radial-gradient(2px 2px at 70% 80%, #ffffff22 20%, transparent 21%);
+      filter:blur(.2px);
+    }
+    .wrap{min-height:100%; display:grid; place-items:center; padding:32px 18px; position:relative; z-index:1}
+    .card{width:min(920px, 96vw); background:linear-gradient(180deg, var(--glass), var(--glass-2));
+      border:1px solid var(--stroke); box-shadow:var(--shadow); border-radius:var(--radius-xl); padding:28px 26px 24px;
+      backdrop-filter: blur(10px) saturate(120%);
+    }
+    .badge{width:70px; height:70px; display:grid; place-items:center; border-radius:50%;
+      margin:8px auto 16px; border:1px solid var(--stroke); background:linear-gradient(135deg, #1aa36d, #0f7a9c);
+      box-shadow:0 12px 24px rgba(0,0,0,.35)}
+    .badge svg{width:34px; height:34px; fill:white}
+    .title{margin:0 0 6px; text-align:center; font-size:28px; line-height:1.2}
+    .subtitle{margin:0 0 26px; text-align:center; color:var(--muted)}
+    .grid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    .grid--1{grid-template-columns:1fr}
+    .field{position:relative}
+    .label{display:block; font-size:13px; color:#cfe0ee; margin:4px 0 6px}
+    .control{display:flex; align-items:center; gap:10px; background:linear-gradient(180deg,#ffffff14,#ffffff0e);
+      border:1px solid var(--stroke); border-radius:var(--radius-md); padding:12px 14px; transition:.2s ease;
+      box-shadow: inset 0 0 0 0 rgba(255,255,255,.6)
+    }
+    .control:focus-within{border-color:#ffffff80; box-shadow:0 0 0 2px #ffffffc5, 0 0 0 6px #2ed27f48}
+    .control input{flex:1; background:transparent; border:0; color:var(--text); outline:none; font-size:15px}
+    .control input::placeholder{color:#c7d8e5}
+    .icon{width:18px; height:18px; opacity:.9}
+    .toggle-eye{cursor:pointer; border:0; background:transparent; display:grid; place-items:center}
+    .btn{appearance:none; border:1px solid var(--stroke); background:linear-gradient(180deg,#2ecf77,#1fa563);
+      color:#08301f; font-weight:800; padding:12px 18px; border-radius:16px; width:100%; cursor:pointer; transition:.2s ease}
+    .btn:hover{filter:brightness(.98)}
+    .btn:active{transform:translateY(1px)}
+    .meta{display:flex; justify-content:space-between; align-items:center; margin:8px 2px 14px}
+    .meta a{color:#cfe0ee; text-decoration:none}
+    .meta a:hover{text-decoration:underline}
+    .errors{background:#2d0f14cc; border:1px solid #ff5c5c55; color:#ffd1d1; padding:12px 14px; border-radius:16px; margin-bottom:16px}
+    .field-error{color:#ffb3b3; font-size:13px; margin-top:6px}
+    @media (max-width:720px){
+      .grid{grid-template-columns:1fr}
+      .card{padding:22px 18px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="app">
+    <section id="registerForm" class="card">
+      <div class="badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" role="img" aria-label="R logo"><circle cx="12" cy="12" r="10" opacity=".25" fill="#fff"/><text x="12" y="16" text-anchor="middle" font-family="ui-sans-serif, system-ui" font-size="12" fill="#fff" font-weight="900">R</text></svg>
+      </div>
+      <h1 class="title">Register to RagaSpace</h1>
+      <p class="subtitle">Reserve curated sport venues and build your community in minutes.</p>
+      {% if form.non_field_errors %}
+        <div class="errors">
+          {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+        </div>
+      {% endif %}
+      <form method="POST" action="" style="display:grid; gap:16px">
+        {% csrf_token %}
+        <div class="grid">
+          <label class="field">
+            <span class="label">First Name</span>
+            <div class="control">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5a5 5 0 0 0 5 5Zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5Z"/></svg>
+              {{ form.first_name }}
+            </div>
+            {% if form.first_name.errors %}<div class="field-error">{{ form.first_name.errors.0 }}</div>{% endif %}
+          </label>
+          <label class="field">
+            <span class="label">Last Name</span>
+            <div class="control">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5a5 5 0 0 0 5 5Zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5Z"/></svg>
+              {{ form.last_name }}
+            </div>
+            {% if form.last_name.errors %}<div class="field-error">{{ form.last_name.errors.0 }}</div>{% endif %}
+          </label>
+        </div>
+        <div class="grid grid--1">
+          <label class="field">
+            <span class="label">E-mail</span>
+            <div class="control">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4l-8 5L4 8V6l8 5l8-5v2Z"/></svg>
+              {{ form.email }}
+            </div>
+            {% if form.email.errors %}<div class="field-error">{{ form.email.errors.0 }}</div>{% endif %}
+          </label>
+        </div>
+        <div class="grid grid--1">
+          <label class="field">
+            <span class="label">Password</span>
+            <div class="control">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm3 8H9V6a3 3 0 0 1 6 0v3Z"/></svg>
+              {{ form.password1 }}
+            </div>
+            {% if form.password1.errors %}<div class="field-error">{{ form.password1.errors.0 }}</div>{% endif %}
+          </label>
+        </div>
+        <div class="grid grid--1">
+          <label class="field">
+            <span class="label">Confirm Password</span>
+            <div class="control">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm3 8H9V6a3 3 0 0 1 6 0v3Z"/></svg>
+              {{ form.password2 }}
+            </div>
+            {% if form.password2.errors %}<div class="field-error">{{ form.password2.errors.0 }}</div>{% endif %}
+          </label>
+        </div>
+        <button class="btn" type="submit">Create Account</button>
+      </form>
+      <div class="meta">
+        <span>Already have an account?</span>
+        <a href="{% url 'login' %}">Sign in</a>
+      </div>
+    </section>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.control input[type="password"]').forEach((input) => {
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'toggle-eye';
+        toggle.innerHTML = '<svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 5c-7 0-10 7-10 7s3 7 10 7s10-7 10-7s-3-7-10-7Zm0 12a5 5 0 1 1 0-10a5 5 0 0 1 0 10Z"/><circle cx="12" cy="12" r="2" fill="#0a1d2a"></circle></svg>';
+        toggle.addEventListener('click', () => {
+          input.type = input.type === 'password' ? 'text' : 'password';
+        });
+        input.parentElement.appendChild(toggle);
+      });
+    });
+  </script>
+</body>
+</html>

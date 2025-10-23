@@ -1,0 +1,147 @@
+{% extends "main/base.html" %}
+{% block title %}RagaSpace — Home{% endblock %}
+{% block content %}
+<section class="hero" style="position:relative;">
+  {% with hero=featured_venues|first %}
+    <div class="photo">
+      {% if hero %}
+        <img src="{{ hero.hero_image }}" alt="{{ hero.name }} hero" />
+      {% else %}
+        <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=2000&q=80" alt="RagaSpace hero" />
+      {% endif %}
+    </div>
+  {% endwith %}
+  <div class="filters">
+    <form method="get" action="" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <div class="pill" style="flex:1 1 220px;">
+        <div style="display:flex; flex-direction:column; gap:4px; width:100%;">
+          <span style="font-size:12px; color:var(--muted);">Search</span>
+          {{ filter_form.q }}
+        </div>
+      </div>
+      <div class="pill" style="flex:1 1 160px;">
+        <div style="display:flex; flex-direction:column; gap:4px; width:100%;">
+          <span style="font-size:12px; color:var(--muted);">City</span>
+          {{ filter_form.city }}
+        </div>
+      </div>
+      <div class="pill" style="flex:1 1 160px;">
+        <div style="display:flex; flex-direction:column; gap:4px; width:100%;">
+          <span style="font-size:12px; color:var(--muted);">Category</span>
+          {{ filter_form.category }}
+        </div>
+      </div>
+      <div class="pill" style="flex:1 1 160px;">
+        <div style="display:flex; flex-direction:column; gap:4px; width:100%;">
+          <span style="font-size:12px; color:var(--muted);">Max Price</span>
+          {{ filter_form.max_price }}
+        </div>
+      </div>
+      <button class="btn" type="submit" style="height:48px;">Apply Filters</button>
+    </form>
+  </div>
+</section>
+
+<section class="container" style="margin-top:100px;">
+  <div class="intro">
+    <div class="copy">
+      <h2>Tailored arenas for every matchday</h2>
+      <p>Filter by city, category, or price to discover curated venues with verified amenities and concierge level support.</p>
+    </div>
+    <a class="btn" href="{% url 'catalog' %}">View Full Catalog</a>
+  </div>
+  <div class="chips">
+    <div class="chip-card">
+      <div>
+        <h4>Flexible Slots</h4>
+        <span>Book per hour</span>
+      </div>
+    </div>
+    <div class="chip-card">
+      <div>
+        <h4>Premium Gear</h4>
+        <span>Pro add-ons</span>
+      </div>
+    </div>
+    <div class="chip-card">
+      <div>
+        <h4>Verified Hosts</h4>
+        <span>24/7 support</span>
+      </div>
+    </div>
+    <div class="chip-card">
+      <div>
+        <h4>Group Deals</h4>
+        <span>Save with teams</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="popular" class="container" style="margin-top:48px;">
+  <h2 class="section-title">Most Popular <em>Venues</em></h2>
+  <div class="grid">
+    {% for venue in featured_venues %}
+      <article class="card">
+        <div class="card-media">
+          <span class="cat">{{ venue.category.name }}</span>
+          <img src="{{ venue.hero_image }}" alt="{{ venue.name }}" />
+          <form method="post" action="{% url 'toggle_wishlist' venue.slug %}" class="heart">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+            <button type="submit" aria-label="Toggle wishlist" style="all:unset; display:grid; place-items:center;">
+              <svg width="20" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 21s-6.5-4.35-9-8.88C1.5 6.6 4.74 3 8.4 3c2.16 0 3.6 1.34 3.6 1.34S13.44 3 15.6 3C19.26 3 22.5 6.6 21 12.12 18.5 16.65 12 21 12 21Z" fill="{% if venue.id in wishlist_ids %}#ff5d6c{% else %}none{% endif %}" stroke="#ff5d6c" stroke-width="1.4" />
+              </svg>
+            </button>
+          </form>
+        </div>
+        <div class="card-body">
+          <h3>{{ venue.name }}</h3>
+          <div class="meta">
+            <span>{{ venue.city }}</span>
+            <span>•</span>
+            <span>{{ venue.capacity }} people</span>
+          </div>
+          <div class="price">
+            <span class="tag">IDR {{ venue.price_per_hour|floatformat:0 }}/hour</span>
+            <a class="link" href="{{ venue.get_absolute_url }}">View Product</a>
+          </div>
+        </div>
+      </article>
+    {% empty %}
+      <p>No venues available yet. Try adjusting filters.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="container testi">
+  <div class="panel">
+    <div class="testi-wrap">
+      <div class="avatar">
+        <img src="https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=600&q=80" alt="Community" />
+      </div>
+      <div class="quote">
+        <h4>Captain Lydia <span class="badge">Elite Futsal League</span></h4>
+        <p>“RagaSpace helps our squads focus purely on performance. Booking elite turf is now a three-click play, complete with trusted reviews and add-on gear.”</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block extra_scripts %}
+  {{ block.super }}
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const heroForm = document.querySelector('.filters form');
+      if (heroForm) {
+        heroForm.querySelectorAll('input, select').forEach((field) => {
+          field.style.background = 'transparent';
+          field.style.border = 'none';
+          field.style.color = 'var(--text)';
+          field.style.fontWeight = '600';
+        });
+      }
+    });
+  </script>
+{% endblock %}

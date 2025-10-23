@@ -1,0 +1,252 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}RagaSpace{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  {% block extra_head %}{% endblock %}
+  <style>
+    :root {
+      --bg: #071B20;
+      --panel: #0d3a42cc;
+      --panel-strong: #0d3a42ee;
+      --text: #EAFBF9;
+      --muted: #B9E5E1;
+      --accent: #C9FFF0;
+      --accent-2: #2FC1B6;
+      --chip: #0F8793;
+      --card: #0b3941cc;
+      --stroke: #0E5560;
+      --warning: #ffb703;
+      --danger: #ff5d6c;
+    }
+
+    * { box-sizing: border-box }
+
+    html, body { margin: 0; font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", sans-serif; color: var(--text); }
+
+    body {
+      background:
+        radial-gradient(720px 380px at 95% 6%, rgba(255, 214, 164, 0.42) 0%, rgba(255, 214, 164, 0) 68%),
+        radial-gradient(680px 340px at 6% 10%, rgba(255, 140, 180, 0.30) 0%, rgba(255, 140, 180, 0) 64%),
+        radial-gradient(900px 420px at 50% -12%, rgba(201, 255, 240, 0.20) 0%, rgba(201, 255, 240, 0) 70%),
+        radial-gradient(1200px 700px at -10% 10%, rgba(201, 255, 240, 0.20) 0%, transparent 60%),
+        radial-gradient(900px 540px at 110% 5%, rgba(47, 193, 182, 0.18) 0%, transparent 62%),
+        radial-gradient(800px 520px at 20% 100%, rgba(15, 135, 147, 0.18) 0%, transparent 60%),
+        radial-gradient(900px 520px at 100% 90%, rgba(12, 107, 120, 0.18) 0%, transparent 65%),
+        linear-gradient(180deg, #0A3139 0%, #061B20 100%);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none }
+    img { display: block; width: 100%; height: auto; object-fit: cover; }
+    .container { width: min(1200px, 92vw); margin-inline: auto }
+
+    .topbar { position: sticky; top: 0; z-index: 50; background: rgba(5, 18, 22, .58); backdrop-filter: saturate(140%) blur(12px); border-bottom: 1px solid var(--stroke) }
+    .nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 8px }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700 }
+    .brand .logo { width: 28px; height: 28px; border-radius: 8px; background: conic-gradient(from 160deg at 50% 50%, #C9FFF0, #2FC1B6, #0F8793); display: grid; place-items: center; color: #05202b; font-size: 18px; box-shadow: 0 0 0 2px rgba(14, 85, 96, .55) inset }
+    .nav-links { display: flex; gap: 26px; align-items: center }
+    .nav-links a { font-weight: 600; color: var(--muted); position: relative; padding-bottom: 4px; }
+    .nav-links a.active { color: var(--text) }
+    .nav-links a.active::after { content: ""; position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--accent-2); border-radius: 999px; }
+    .actions { display: flex; gap: 10px; align-items: center }
+    .btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--stroke); background: linear-gradient(135deg, #2FC1B6, #0F8793); padding: 8px 12px; border-radius: 12px; color: var(--text); font-weight: 700; box-shadow: 0 6px 18px rgba(8, 59, 65, .35) }
+    .btn:hover { filter: brightness(1.06) }
+    .icon-btn { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px; border: 1px solid var(--stroke); background: #0a161c }
+    .burger { display: none }
+    @media (max-width:900px) { .nav-links { display: none } .burger { display: grid } }
+
+    .drawer { position: fixed; inset: 0; background: #0008; backdrop-filter: blur(2px); display: none }
+    .drawer.open { display: block }
+    .sheet { position: absolute; right: 0; top: 0; height: 100%; width: min(90vw, 360px); background: #0a151b; border-left: 1px solid var(--stroke); padding: 20px 18px; display: flex; flex-direction: column; gap: 14px }
+    .sheet a { padding: 12px 10px; border-radius: 10px; border: 1px solid var(--stroke); background: #0f1f26; color: var(--muted); font-weight: 600 }
+
+    .messages { position: fixed; right: 20px; top: 90px; display: grid; gap: 12px; z-index: 80; width: min(360px, 90vw) }
+    .message { padding: 12px 16px; border-radius: 14px; border: 1px solid var(--stroke); background: rgba(9,33,38,.75); backdrop-filter: blur(12px); font-weight: 600; }
+    .message.success { border-color: rgba(61, 209, 180, .6); color: var(--accent); }
+    .message.info { border-color: rgba(65, 138, 201, .6); color: #c7e3ff; }
+    .message.error { border-color: rgba(255, 92, 92, .6); color: #ffc5c5; }
+
+    .hero { position: relative; }
+    .hero .photo { height: 56vh; min-height: 380px; max-height: 620px; border-radius: 0 0 24px 24px; overflow: hidden; border-bottom: 1px solid var(--stroke); position: relative }
+    .hero .photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #00000066 0%, #00000022 40%, #08131a 100%) }
+    .hero img { width: 100%; height: 100%; object-fit: cover; filter: saturate(110%) contrast(98%); }
+    .filters { position: absolute; left: 50%; bottom: -34px; transform: translateX(-50%); display: flex; gap: 12px; flex-wrap: wrap; background: var(--panel); backdrop-filter: saturate(140%) blur(10px); border: 1px solid var(--stroke); padding: 10px; border-radius: 999px; box-shadow: 0 16px 40px rgba(8, 59, 65, .45); z-index: 6 }
+    .pill { display: flex; align-items: center; gap: 10px; background: rgba(15, 135, 147, .22); border: 1px solid var(--stroke); padding: 10px 14px; border-radius: 999px; color: var(--muted); }
+    .pill input, .pill select { color: inherit; font-weight: 600; }
+
+    .chips { display: flex; gap: 14px; margin-top: 72px; align-items: center; flex-wrap: wrap }
+    .chip-card { width: 160px; min-height: 86px; border-radius: 18px; background: linear-gradient(160deg, #2FC1B6, #0F8793 60%); border: 1px solid var(--stroke); display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; box-shadow: 0 12px 40px rgba(8, 59, 65, .45) }
+    .chip-card h4 { margin: 0; font-size: 18px }
+    .chip-card span { display: block; color: var(--muted); font-weight: 600; opacity: .8 }
+
+    .intro { display: flex; align-items: center; gap: 26px; margin: 10px 0 8px }
+    .intro .copy { max-width: 560px }
+    .intro h2 { margin: 0 0 8px; font-size: 26px }
+    .intro p { margin: 0; color: var(--muted) }
+
+    .section-title { margin: 42px 0 16px; text-align: center; font-size: 28px; letter-spacing: .3px }
+    .section-title em { color: var(--accent) }
+
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px }
+    @media (max-width:980px) { .grid { grid-template-columns: repeat(2, 1fr) } }
+    @media (max-width:640px) { .grid { grid-template-columns: 1fr } }
+
+    .card { border: 1px solid var(--stroke); border-radius: 18px; overflow: hidden; background: var(--card); box-shadow: 0 20px 40px #00000040 }
+    .card-media { position: relative; height: 170px }
+    .card-media img { width: 100%; height: 100%; object-fit: cover }
+    .cat { position: absolute; left: 10px; top: 10px; background: linear-gradient(135deg, #C9FFF0, #2FC1B6); color: #052534; font-weight: 800; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--stroke); box-shadow: 0 8px 20px rgba(8, 59, 65, .35); font-size: 12px }
+    .heart { position: absolute; right: 10px; bottom: 10px; width: 36px; height: 36px; border-radius: 12px; background: #0a161c; border: 1px solid var(--stroke); display: grid; place-items: center }
+    .heart button { cursor: pointer }
+    .card-body { padding: 14px }
+    .card h3 { margin: 0 0 2px; font-size: 18px }
+    .meta { display: flex; gap: 10px; color: var(--muted); font-size: 12px; align-items: center }
+    .price { display: flex; align-items: center; justify-content: space-between; margin-top: 10px }
+    .price .tag { font-weight: 800 }
+    .link { color: var(--accent); font-weight: 700 }
+    .link:hover { color: #A2F2E3 }
+
+    .panel { background: linear-gradient(160deg, #0F8793 0%, #083B46 60%); border: 1px solid var(--stroke); border-radius: 20px; padding: 18px }
+    .testi-wrap { display: grid; grid-template-columns: 320px 1fr; gap: 26px; align-items: center }
+    @media (max-width:900px) { .testi-wrap { grid-template-columns: 1fr } }
+    .avatar { border-radius: 16px; overflow: hidden; border: 1px solid var(--stroke) }
+    .quote { background: rgba(6, 23, 28, 0.35); border: 1px solid var(--stroke); border-radius: 16px; padding: 16px 20px }
+    .quote h4 { margin: 0 0 8px; display: flex; gap: 10px; align-items: center }
+    .badge { font-size: 12px; color: #00171f; background: var(--accent); padding: 4px 10px; border-radius: 999px }
+    .quote p { margin: 0; color: var(--muted); line-height: 1.7 }
+
+    main { min-height: 70vh; }
+
+    footer { margin: 48px 0 0; border-top: 1px solid var(--stroke); background: linear-gradient(180deg, #083B46, #071B20) }
+    .foot-top { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 20px; padding: 28px 0 }
+    @media (max-width:980px) { .foot-top { grid-template-columns: 1fr 1fr } }
+    @media (max-width:580px) { .foot-top { grid-template-columns: 1fr } }
+    .foot-logo { display: flex; gap: 12px; align-items: center }
+    .foot-logo .big { width: 44px; height: 44px; border-radius: 12px; background: conic-gradient(from 160deg, #C9FFF0, #2FC1B6, #0F8793); display: grid; place-items: center; color: #052534; font-weight: 900 }
+    .muted { color: var(--muted) }
+    .foot-list { display: grid; gap: 10px }
+    .foot-list a { color: var(--muted) }
+    .foot-bottom { border-top: 1px solid var(--stroke); padding: 12px 0; color: var(--muted); display: flex; gap: 16px; flex-wrap: wrap; justify-content: space-between }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container nav">
+      <div class="brand">
+        <div class="logo" aria-label="RagaSpace">🐾</div>
+        <span>RagaSpace</span>
+      </div>
+      <nav class="nav-links">
+        <a href="{% url 'home' %}" class="{% if request.path == '/home/' %}active{% endif %}">Home</a>
+        <a href="{% url 'catalog' %}" class="{% if request.path == '/catalog/' %}active{% endif %}">Catalog</a>
+        <a href="{% url 'wishlist' %}" class="{% if request.path == '/wishlist/' %}active{% endif %}">Wishlist</a>
+        <a href="{% url 'profile' %}" class="{% if request.path == '/profile/' %}active{% endif %}">Profile</a>
+      </nav>
+      <div class="actions">
+        <div class="muted" style="font-weight:600;">{{ request.user.first_name|default:request.user.username }}</div>
+        <form method="post" action="{% url 'logout' %}" style="margin:0">
+          {% csrf_token %}
+          <button type="submit" class="btn" style="font-size:14px;">Logout</button>
+        </form>
+        <button class="icon-btn burger" aria-label="Open menu" data-open-drawer>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="drawer" data-drawer>
+    <div class="sheet">
+      <a href="{% url 'home' %}">Home</a>
+      <a href="{% url 'catalog' %}">Catalog</a>
+      <a href="{% url 'wishlist' %}">Wishlist</a>
+      <a href="{% url 'profile' %}">Profile</a>
+      <form method="post" action="{% url 'logout' %}" style="margin-top:auto">
+        {% csrf_token %}
+        <button type="submit" class="btn" style="width:100%; justify-content:center">Logout</button>
+      </form>
+    </div>
+  </div>
+
+  {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <div class="container foot-top">
+      <div>
+        <div class="foot-logo">
+          <div class="big">RG</div>
+          <div>
+            <strong>RagaSpace</strong>
+            <p class="muted">Premium sport venues with concierge level support.</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <strong>Company</strong>
+        <div class="foot-list">
+          <a href="#">About</a>
+          <a href="#">Careers</a>
+          <a href="#">Press</a>
+        </div>
+      </div>
+      <div>
+        <strong>Support</strong>
+        <div class="foot-list">
+          <a href="#">Help Center</a>
+          <a href="#">Cancellation Options</a>
+          <a href="#">Trust & Safety</a>
+        </div>
+      </div>
+      <div>
+        <strong>Community</strong>
+        <div class="foot-list">
+          <a href="#">Ambassadors</a>
+          <a href="#">Events</a>
+          <a href="#">Partnerships</a>
+        </div>
+      </div>
+    </div>
+    <div class="container foot-bottom">
+      <span>© {% now 'Y' %} RagaSpace. All rights reserved.</span>
+      <span>Built for athletes who demand the best fields.</span>
+    </div>
+  </footer>
+  <script>
+    const drawer = document.querySelector('[data-drawer]');
+    const openBtn = document.querySelector('[data-open-drawer]');
+    if (openBtn && drawer) {
+      openBtn.addEventListener('click', () => drawer.classList.toggle('open'));
+      drawer.addEventListener('click', (event) => {
+        if (event.target === drawer) {
+          drawer.classList.remove('open');
+        }
+      });
+    }
+    const messageWrap = document.querySelector('.messages');
+    if (messageWrap) {
+      setTimeout(() => {
+        messageWrap.style.transition = 'opacity 0.4s ease';
+        messageWrap.style.opacity = '0';
+        setTimeout(() => messageWrap.remove(), 400);
+      }, 4200);
+    }
+    {% block extra_scripts %}{% endblock %}
+  </script>
+</body>
+</html>
